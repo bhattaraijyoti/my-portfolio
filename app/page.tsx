@@ -246,26 +246,12 @@ export default function Home() {
           {/* Socials */}
           <div className="flex gap-6 justify-center pt-4">
             <motion.a
-              href="#"
-              whileHover={{ scale: 1.15, y: -6 }}
-              className="text-muted-foreground dark:text-muted-foreground-light hover:text-blue-500 transition-colors"
-              aria-label="Twitter"
-            >
-              <Twitter className="w-6 h-6" />
-            </motion.a>
-            <motion.a
-              href="#"
-              whileHover={{ scale: 1.15, y: -6 }}
-              className="text-muted-foreground dark:text-muted-foreground-light hover:text-blue-500 transition-colors"
-              aria-label="LinkedIn"
-            >
-              <Linkedin className="w-6 h-6" />
-            </motion.a>
-            <motion.a
-              href="#"
+              href="https://github.com/bhattaraijyoti/my-portfolio"
               whileHover={{ scale: 1.15, y: -6 }}
               className="text-muted-foreground dark:text-muted-foreground-light hover:text-blue-500 transition-colors"
               aria-label="GitHub"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <Github className="w-6 h-6" />
             </motion.a>
@@ -449,7 +435,7 @@ Always exploring new ideas and technologies, constantly experimenting with anima
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <motion.a
-              href="mailto:jyotibhattarai010@gmail.com"
+              href="mailto:hello@hamishwilliams.com"
               whileHover={{ scale: 1.05, boxShadow: "0 8px 24px 0 rgba(80,80,200,0.13)" }}
               whileTap={{ scale: 0.97 }}
               className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold text-lg shadow-none transition-all"
@@ -464,11 +450,16 @@ Always exploring new ideas and technologies, constantly experimenting with anima
       {/* Footer */}
       <footer className="border-t border-border/40 bg-background/60 dark:bg-background/50 backdrop-blur-md py-7 px-4 md:px-0 transition-colors">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-sm text-muted-foreground dark:text-muted-foreground-light">© 2024 Jyoti Bhattarai</span>
+          <span className="text-sm text-muted-foreground dark:text-muted-foreground-light">© 2026 Jyoti Bhattarai</span>
           <div className="flex gap-6">
-            <a href="#" className="text-sm text-muted-foreground dark:text-muted-foreground-light hover:text-blue-500 transition-colors">Twitter</a>
-            <a href="#" className="text-sm text-muted-foreground dark:text-muted-foreground-light hover:text-blue-500 transition-colors">LinkedIn</a>
-            <a href="#" className="text-sm text-muted-foreground dark:text-muted-foreground-light hover:text-blue-500 transition-colors">GitHub</a>
+            <a
+              href="https://github.com/bhattaraijyoti/my-portfolio"
+              className="text-sm text-muted-foreground dark:text-muted-foreground-light hover:text-blue-500 transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub
+            </a>
           </div>
         </div>
       </footer>
