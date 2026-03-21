@@ -211,7 +211,7 @@ export default function Home() {
             <span className="block">
               <span className="text-foreground dark:text-foreground-light">Designing with</span>
             </span>
-            <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
+            <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-500 to-cyan-400">
               Motion &amp; Purpose
             </span>
           </motion.h1>
@@ -230,7 +230,7 @@ export default function Home() {
               href="#projects"
               ref={useMagnetic(0.25) as any}
               whileHover={{ scale: 1.06 }}
-              className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold text-lg shadow-[0_0_0_0_rgba(99,102,241,0)] hover:shadow-[0_10px_40px_rgba(99,102,241,0.25)] transition-all duration-300"
+              className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-lg shadow-[0_0_0_0_rgba(99,102,241,0)] hover:shadow-[0_10px_40px_rgba(99,102,241,0.25)] transition-all duration-300"
             >
               View Projects
             </motion.a>
@@ -407,7 +407,7 @@ Always exploring new ideas and technologies, constantly experimenting with anima
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="relative py-20 md:py-32 px-4 md:px-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 dark:from-blue-500/5 dark:to-purple-500/5 transition-colors">
+      <section id="contact" className="relative py-20 md:py-32 px-4 md:px-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 dark:from-blue-500/5 dark:to-cyan-500/5 transition-colors">
         <div className="max-w-2xl mx-auto text-center">
           <motion.h2
             initial={{ opacity: 0, y: 24 }}
@@ -438,7 +438,7 @@ Always exploring new ideas and technologies, constantly experimenting with anima
               href="mailto:hello@hamishwilliams.com"
               whileHover={{ scale: 1.05, boxShadow: "0 8px 24px 0 rgba(80,80,200,0.13)" }}
               whileTap={{ scale: 0.97 }}
-              className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold text-lg shadow-none transition-all"
+              className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-lg shadow-none transition-all"
             >
               Send Me an Email
             </motion.a>
