@@ -16,7 +16,7 @@ const projects = [
   },
   {
     title: 'Tech Club',
-    description: 'Complete UX redesign of a learning management system, improving user engagement by 45%.',
+    description: 'Platform for tech learners to learn, create, and inspire.',
     link: 'https://techclubb.vercel.app',
     image: '/tech.png',
   },
