@@ -435,7 +435,7 @@ Always exploring new ideas and technologies, constantly experimenting with anima
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <motion.a
-              href="mailto:hello@hamishwilliams.com"
+              href="mailto:jyotibhattarai010@gmail.com"
               whileHover={{ scale: 1.05, boxShadow: "0 8px 24px 0 rgba(80,80,200,0.13)" }}
               whileTap={{ scale: 0.97 }}
               className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-lg shadow-none transition-all"
