@@ -10,19 +10,20 @@ import Cursor from '@/components/Cursor'
 const projects = [
   {
     title: 'Treatss',
-    description: 'Treatss is a digital food-delivery service in Tulsipur.',
+
+    description: 'Treatss is a digital food-delivery service in Tulsipur.It made ordering food easier for local residents and helped local restaurants get more customers by bringing convenience, choice, and faster delivery to Tulsipur’s food ecosystem.',
     link: 'https://treatss.com',
     image: '/treatss.png',
   },
   {
     title: 'Tech Club',
-    description: 'Platform for tech learners to learn, create, and inspire.',
+    description: 'It centralizes tech learning resources and collaboration opportunities for students and creators, helping people learn new skills and connect with other tech enthusiasts instead of relying on fragmented communities.',
     link: 'https://techclubb.vercel.app',
     image: '/tech.png',
   },
   {
     title: 'Tulsipur Dang',
-    description: 'Community-driven platform to transform Tulsipur into a tech hub.',
+    description: 'It is a community-driven platform to transform Tulsipur into a tech hub.It brings together local events, tech news, and community projects in one place to help tech‑focused people in Tulsipur find resources, mentors, and collaborators more easily, supporting the growth of the local tech ecosystem.',
     link: 'https://tulsipurdang.com',
     image: '/tulsipurdang.png',
   },
