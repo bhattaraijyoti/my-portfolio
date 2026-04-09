@@ -1,10 +1,9 @@
 'use client'
 
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { ChevronDown, Github, Linkedin, Twitter } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { ScrollProgress } from '@/components/scroll-progress'
-import Cursor from '@/components/Cursor'
 
 
 const projects = [
@@ -42,63 +41,6 @@ const skills = [
 
 import { useRef, useState, useEffect, useMemo } from 'react'
 
-// Magnetic cursor hook for interactive UI elements
-function useMagnetic(strength = 0.2) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const handle = (e: MouseEvent) => {
-      // Disable magnetic effect on mobile (reduces lag)
-      if (window.innerWidth < 768) return
-      const rect = el.getBoundingClientRect()
-      const x = e.clientX - (rect.left + rect.width / 2)
-      const y = e.clientY - (rect.top + rect.height / 2)
-      el.style.transform = `translate(${x * strength}px, ${y * strength}px)`
-    }
-    const reset = () => { if (el) el.style.transform = 'translate(0,0)' }
-    el.addEventListener('mousemove', handle)
-    el.addEventListener('mouseleave', reset)
-    return () => {
-      el.removeEventListener('mousemove', handle)
-      el.removeEventListener('mouseleave', reset)
-    }
-  }, [strength])
-  return ref
-}
-
-// Floating minimal parallax circles for background (like hamishw.com)
-function FloatingCursorElements({ mouse, windowSize }: { mouse: { x: number, y: number }, windowSize: { width: number, height: number } }) {
-  const configs = useMemo(() => [
-    { size: 210, color: 'bg-blue-500/10', dx: 90, dy: -100, speed: 0.5 },
-    { size: 120, color: 'bg-pink-500/10', dx: -140, dy: 80, speed: 0.7 },
-    { size: 90, color: 'bg-purple-400/10', dx: 120, dy: 200, speed: 0.6 },
-    { size: 60, color: 'bg-yellow-400/10', dx: -200, dy: -110, speed: 0.8 },
-  ], [])
-  return (
-    <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
-      {configs.map((cfg, idx) => {
-        const x = mouse.x * windowSize.width + cfg.dx * cfg.speed
-        const y = mouse.y * windowSize.height + cfg.dy * cfg.speed
-        return (
-          <motion.div
-            key={idx}
-            animate={{ x, y }}
-            transition={{ type: "spring", stiffness: 18, damping: 20 }}
-            className={`absolute rounded-full blur-3xl ${cfg.color}`}
-            style={{
-              width: cfg.size,
-              height: cfg.size,
-              left: 0,
-              top: 0,
-            }}
-          />
-        )
-      })}
-    </div>
-  )
-}
-
 // Simple scroll reveal using intersection observer
 function useScrollReveal(ref: React.RefObject<HTMLElement>, offset: number = 100) {
   const [visible, setVisible] = useState(false)
@@ -116,58 +58,20 @@ function useScrollReveal(ref: React.RefObject<HTMLElement>, offset: number = 100
     visible,
     style: {
       opacity: visible ? 1 : 0,
-      transform: visible ? 'none' : 'translateY(40px)',
-      transition: 'opacity 0.8s cubic-bezier(.4,0,.2,1), transform 0.8s cubic-bezier(.4,0,.2,1)',
+      transform: visible ? 'none' : 'translateY(20px)',
+      transition: 'opacity 0.5s cubic-bezier(.4,0,.2,1), transform 0.5s cubic-bezier(.4,0,.2,1)',
       willChange: 'opacity, transform',
     }
   }
 }
 
 export default function Home() {
-  // For image parallax
+  // For image parallax - removed
   const projectsSectionRef = useRef<HTMLDivElement>(null)
-  const { scrollY } = useScroll()
-  // Each project image parallax
-  const getParallax = (index: number) => useTransform(scrollY, [0, 600 + index * 200], [0, (index % 2 === 0 ? -8 : 8)])
-  // For hero text parallax
+  // const { scrollY } = useScroll()
+  // const getParallax = (index: number) => useTransform(scrollY, [0, 600 + index * 200], [0, (index % 2 === 0 ? -8 : 8)])
   const heroRef = useRef<HTMLDivElement>(null)
-  const heroParallax = useTransform(scrollY, [0, 320], [0, 32])
-
-  // === Interactive Background Animation State ===
-  const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 })
-  // Save window size for normalization
-  const [windowSize, setWindowSize] = useState({ width: 1, height: 1 })
-
-  useEffect(() => {
-    const updateWindowSize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      })
-    }
-    updateWindowSize()
-    window.addEventListener('resize', updateWindowSize)
-    return () => window.removeEventListener('resize', updateWindowSize)
-  }, [])
-
-  useEffect(() => {
-    let raf = 0
-    const handleMouseMove = (e: MouseEvent) => {
-      if (raf) return
-      raf = requestAnimationFrame(() => {
-        setMouse({
-          x: e.clientX / (windowSize.width || 1),
-          y: e.clientY / (windowSize.height || 1),
-        })
-        raf = 0
-      })
-    }
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [windowSize])
+  // const heroParallax = useTransform(scrollY, [0, 320], [0, 32])
 
   // === Scroll-based animation refs ===
   const projectsHeaderRef = useRef<HTMLDivElement>(null)
@@ -179,9 +83,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300 relative overflow-x-clip" style={{ scrollBehavior: 'smooth' }}>
-      <Cursor />
-      {/* Interactive minimal floating background shapes */}
-      <FloatingCursorElements mouse={mouse} windowSize={windowSize} />
       <ScrollProgress />
       {/* Minimal nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/70 dark:bg-background/60 border-b border-border/30 backdrop-blur-md transition-colors">
@@ -207,7 +108,6 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.22,1,0.36,1] }}
             className="text-[2.6rem] sm:text-6xl md:text-7xl font-bold leading-tight tracking-tight"
-            style={{ y: heroParallax }}
           >
             <span className="block">
               <span className="text-foreground dark:text-foreground-light">Designing with</span>
@@ -229,16 +129,12 @@ export default function Home() {
           <motion.div className="flex flex-col sm:flex-row gap-4 justify-center mt-1">
             <motion.a
               href="#projects"
-              ref={useMagnetic(0.25) as any}
-              whileHover={{ scale: 1.06 }}
               className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-lg shadow-[0_0_0_0_rgba(99,102,241,0)] hover:shadow-[0_10px_40px_rgba(99,102,241,0.25)] transition-all duration-300"
             >
               View Projects
             </motion.a>
             <motion.a
               href="#contact"
-              ref={useMagnetic(0.2) as any}
-              whileHover={{ scale: 1.04 }}
               className="px-8 py-3 rounded-full border border-border font-semibold text-lg hover:bg-muted transition-colors"
             >
               Get in touch
@@ -283,7 +179,6 @@ export default function Home() {
         </div>
         <div className="flex flex-col gap-24">
           {projects.map((project, index) => {
-            const parallaxY = getParallax(index)
             const cardRef = useRef<HTMLDivElement>(null)
             const cardReveal = useScrollReveal(cardRef, 120)
             return (
@@ -308,28 +203,20 @@ export default function Home() {
                 </motion.span>
                 {/* Project Image */}
                 {project.image && (
-                  <motion.div
-                    onMouseMove={(e)=>{
-                      const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-                      const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-                      (e.currentTarget as HTMLDivElement).style.setProperty('--x', `${x}px`);
-                      (e.currentTarget as HTMLDivElement).style.setProperty('--y', `${y}px`);
-                    }}
-                    initial={{ opacity: 0, scale: 0.96, y: 28 }}
-                    whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: index * 0.14 + 0.12, ease: [0.22,1,0.36,1] }}
-                    className="relative w-full md:w-[420px] aspect-[4/3] rounded-2xl overflow-hidden shadow-md border border-border/40 bg-background group"
-                    style={{ y: parallaxY }}
-                    whileHover={{ scale: 1.03 }}
+                  <div
+                    className="group relative w-full md:w-[420px] aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-border/40 bg-background transition-shadow duration-300"
                   >
-                    <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{background:'radial-gradient(300px circle at var(--x) var(--y), rgba(255,255,255,0.08), transparent 60%)'}} />
                     <img
                       src={project.image}
                       alt={project.title}
-                      className="object-cover w-full h-full"
+                      loading="lazy"
+                      decoding="async"
+                      className="object-cover w-full h-full transition-transform duration-300 will-change-transform group-hover:scale-[1.03]"
                       draggable={false}
+                      style={{ contentVisibility: 'auto' }}
                     />
-                  </motion.div>
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
                 )}
                 {/* Project Content */}
                 <motion.div
@@ -465,7 +352,7 @@ Always exploring new ideas and technologies, constantly experimenting with anima
         </div>
       </footer>
       {/* Subtle noise overlay for premium feel */}
-      <div className="pointer-events-none fixed inset-0 opacity-[0.03] mix-blend-overlay" style={{backgroundImage:'url(/noise.png)'}} />
+      <div className="pointer-events-none fixed inset-0 opacity-[0.01] mix-blend-overlay" style={{backgroundImage:'url(/noise.png)'}} />
     </div>
   )
 }
