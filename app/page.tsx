@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ChevronDown, Github, Linkedin, Twitter } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { ScrollProgress } from '@/components/scroll-progress'
+import Cursor from '@/components/Cursor'
 
 
 const projects = [
@@ -84,6 +85,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300 relative overflow-x-clip" style={{ scrollBehavior: 'smooth' }}>
       <ScrollProgress />
+      <Cursor />
       {/* Minimal nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/70 dark:bg-background/60 border-b border-border/30 backdrop-blur-md transition-colors">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
@@ -94,7 +96,7 @@ export default function Home() {
             <a href="#projects" className="text-base font-medium text-foreground dark:text-foreground-light hover:text-blue-500 transition-colors hidden sm:block">Projects</a>
             <a href="#about" className="text-base font-medium text-foreground dark:text-foreground-light hover:text-blue-500 transition-colors hidden sm:block">About</a>
             <a href="#contact" className="text-base font-medium text-foreground dark:text-foreground-light hover:text-blue-500 transition-colors hidden sm:block">Contact</a>
-            <ThemeToggle />
+            <ThemeToggle  />
           </div>
         </div>
       </nav>
