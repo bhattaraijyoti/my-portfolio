@@ -1,13 +1,10 @@
-// app/layout.tsx
 import type { Metadata } from 'next'
 import './globals.css'
-import { ThemeProviderClient } from '../components/ThemeProviderClient.tsx'
 import { AnalyticsClient } from '../components/AnalyticsClient'
 
 export const metadata: Metadata = {
-  title: 'Jyoti Bhattarai | Designer + Developer',
-  description: 'Senior product designer creating UX design, UI animations, and icon illustrations',
-  generator: 'v0.app',
+  title: 'Jyoti Bhattarai — Designer + Developer',
+  description: 'Designer and frontend developer crafting clear digital products. Based in Tulsipur, Nepal.',
   icons: {
     icon: [
       { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
@@ -20,13 +17,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased">
-        <ThemeProviderClient>
-          {children}
-        </ThemeProviderClient>
-        <AnalyticsClient />
-      </body>
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body style={{ background: '#0a0e0c' }}>{children}</body>
+      <AnalyticsClient />
     </html>
   )
 }
