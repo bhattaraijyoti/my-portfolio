@@ -78,7 +78,7 @@ function LampPost({ position, lightRef }: { position: [number, number, number]; 
       {/* Lamp glass */}
       <mesh position={[0, 1.72, 0]}>
         <sphereGeometry args={[0.07, 8, 8]} />
-        <meshBasicMaterial color="#fff5e0" transparent opacity={0.9} />
+        <meshBasicMaterial color="#e0e8ff" transparent opacity={0.9} />
       </mesh>
       {/* Light */}
       <pointLight
@@ -86,7 +86,7 @@ function LampPost({ position, lightRef }: { position: [number, number, number]; 
         position={[0, 1.7, 0]}
         intensity={1.5}
         distance={8}
-        color="#ffe8c0"
+        color="#d8e0ff"
       />
     </group>
   )

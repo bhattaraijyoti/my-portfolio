@@ -70,7 +70,7 @@ export default function DustTrail() {
       </bufferGeometry>
       <pointsMaterial
         size={0.2}
-        color="#c8b89c"
+        color="#d8dce8"
         transparent
         opacity={0.2}
         sizeAttenuation

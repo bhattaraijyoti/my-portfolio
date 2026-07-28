@@ -1,9 +1,9 @@
 'use client'
 
-import { Suspense, useCallback, useState, useEffect, useRef } from 'react'
+import { Suspense, useCallback, useState, useEffect, useRef, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Environment } from '@react-three/drei'
-import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
+import { EffectComposer, Bloom, Vignette, SMAA } from '@react-three/postprocessing'
 import * as THREE from 'three'
 import Experience from './Experience'
 import ProjectPanel from '../ui/ProjectPanel'
@@ -13,6 +13,9 @@ import ProximityIndicator from '../ui/ProximityIndicator'
 import Sidebar from '../ui/Sidebar'
 import Minimap from '../ui/Minimap'
 import ToastContainer, { useToasts } from '../ui/DiscoveryToast'
+import Whispers from '../ui/Whispers'
+import Leaderboard from '../ui/Leaderboard'
+import Achievements from '../ui/Achievements'
 import { playDiscoveryChime, playWhoosh } from '../../lib/sound'
 
 const PROJECTS = [
@@ -135,6 +138,8 @@ export default function Scene() {
           powerPreference: 'high-performance',
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.0,
+          stencil: false,
+          depth: true,
         }}
         dpr={[1, 2]}
         style={{ background: '#000' }}
@@ -151,10 +156,11 @@ export default function Scene() {
         </Suspense>
 
         <EffectComposer multisampling={2}>
+          <SMAA />
           <Bloom
-            intensity={0.4}
-            luminanceThreshold={0.9}
-            luminanceSmoothing={0.5}
+            intensity={0.35}
+            luminanceThreshold={0.85}
+            luminanceSmoothing={0.6}
             mipmapBlur
           />
           <Vignette
@@ -190,6 +196,10 @@ export default function Scene() {
       <Minimap visible={showMinimap} />
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
+      <Whispers />
+      <Leaderboard />
+      <Achievements />
 
       <ProjectPanel
         project={project || null}

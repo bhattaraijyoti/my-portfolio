@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { ContactShadows } from '@react-three/drei'
 import * as THREE from 'three'
@@ -11,13 +11,14 @@ import Sky from './Sky'
 import ProjectHotspot from './ProjectHotspot'
 import Particles from './Particles'
 import DustTrail from './DustTrail'
-import Bricks from './Bricks'
-import Butterflies from './Butterflies'
-import Flowers from './Flowers'
 import GardenDecor from './GardenDecor'
-import Fireflies from './Fireflies'
-import SakuraTrees from './SakuraTrees'
 import { carStore } from './store'
+import { useAdaptiveDPR } from '../../hooks/useAdaptiveDPR'
+import { PhysicsWorld } from './Physics'
+import { WeatherProvider, useWeather, Rain, Snow, WindSystem } from './Weather'
+import RaceTrack from './RaceTrack'
+import { startAmbient, stopAmbient, updateAmbientWind, updateAmbientRain } from '../../lib/sound'
+import { trackAchievements } from '../../lib/achievements'
 
 const PROJECTS = [
   {
@@ -45,7 +46,39 @@ interface ExperienceProps {
   onTeleportReady?: (fn: (pos: [number, number, number]) => void) => void
 }
 
+function WeatherEffects() {
+  const weather = useWeather()
+
+  useFrame(() => {
+    updateAmbientWind(weather.windStrength)
+    updateAmbientRain(weather.isRaining, weather.windStrength)
+  })
+
+  return (
+    <>
+      <Rain />
+      <Snow />
+      <WindSystem />
+    </>
+  )
+}
+
+function AchievementTracker() {
+  useFrame(() => {
+    const speed = carStore.velocity.length()
+    trackAchievements(speed, false)
+  })
+  return null
+}
+
 export default function Experience({ onProjectProximity, onTeleportReady }: ExperienceProps) {
+  useAdaptiveDPR()
+
+  useEffect(() => {
+    startAmbient()
+    return () => stopAmbient()
+  }, [])
+
   const handleProximity = useCallback((label: string, isNear: boolean) => {
     onProjectProximity?.(label, isNear)
   }, [onProjectProximity])
@@ -65,86 +98,91 @@ export default function Experience({ onProjectProximity, onTeleportReady }: Expe
   })
 
   return (
-    <>
-      <Sky />
-      <ChaseCamera />
+    <PhysicsWorld>
+      <WeatherProvider>
+        <Sky />
+        <ChaseCamera />
 
-      <fog attach="fog" args={['#c47840', 45, 110]} />
+        <fog attach="fog" args={['#b0c4d8', 40, 100]} />
 
-      {/* Main sun — low and warm */}
-      <directionalLight
-        position={[20, 8, 14]}
-        intensity={4.0}
-        color="#ff9040"
-        castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-        shadow-camera-far={60}
-        shadow-camera-left={-25}
-        shadow-camera-right={25}
-        shadow-camera-top={25}
-        shadow-camera-bottom={-25}
-        shadow-bias={-0.0003}
-        shadow-normalBias={0.015}
-        shadow-radius={4}
-      />
-
-      {/* Cool fill from opposite side */}
-      <directionalLight
-        position={[-15, 15, -12]}
-        intensity={0.4}
-        color="#8090c0"
-      />
-
-      {/* Warm bounce from ground */}
-      <directionalLight
-        position={[0, 3, -20]}
-        intensity={0.3}
-        color="#ff8860"
-      />
-
-      <ambientLight intensity={0.35} color="#d09060" />
-
-      <hemisphereLight args={['#c07040', '#2a3a1a', 0.8]} />
-
-      <pointLight position={[0, 25, 0]} intensity={0.1} distance={80} color="#ffcc88" />
-
-      <World />
-
-      <Bricks />
-      <Flowers />
-      <Butterflies />
-      <GardenDecor />
-      <Fireflies />
-      <SakuraTrees />
-
-      <group userData={{ isCar: true }}>
-        <Car />
-      </group>
-
-      <ContactShadows
-        position={[0, -0.02, 0]}
-        opacity={0.3}
-        scale={100}
-        blur={2}
-        far={20}
-        color="#2a1a10"
-      />
-
-      <DustTrail />
-
-      {PROJECTS.map((project) => (
-        <ProjectHotspot
-          key={project.title}
-          position={project.position}
-          label={project.title}
-          tags={project.tags}
-          image={project.image}
-          onProximityChange={handleProximity}
+        {/* Main light — cool winter sun */}
+        <directionalLight
+          position={[15, 20, 10]}
+          intensity={2.5}
+          color="#d0d8e8"
+          castShadow
+          shadow-mapSize-width={256}
+          shadow-mapSize-height={256}
+          shadow-camera-far={50}
+          shadow-camera-left={-20}
+          shadow-camera-right={20}
+          shadow-camera-top={20}
+          shadow-camera-bottom={-20}
+          shadow-bias={-0.0003}
+          shadow-normalBias={0.015}
+          shadow-radius={3}
         />
-      ))}
 
-      <Particles />
-    </>
+        {/* Cool fill */}
+        <directionalLight
+          position={[-10, 18, -8]}
+          intensity={0.6}
+          color="#a0b0d0"
+        />
+
+        {/* Subtle warm bounce */}
+        <directionalLight
+          position={[0, 5, -15]}
+          intensity={0.15}
+          color="#c8c0d0"
+        />
+
+        <ambientLight intensity={0.55} color="#b8c8d8" />
+
+        <hemisphereLight args={['#c8d0e0', '#8090a0', 0.6]} />
+
+        <pointLight position={[0, 25, 0]} intensity={0.05} distance={80} color="#c0c8e0" />
+
+        <World />
+
+        <GardenDecor />
+
+        <group userData={{ isCar: true }}>
+          <Car />
+        </group>
+
+        <ContactShadows
+          position={[0, -0.02, 0]}
+          opacity={0.3}
+          scale={40}
+          blur={1.5}
+          far={10}
+          color="#3a4050"
+        />
+
+        <DustTrail />
+
+        <RaceTrack />
+
+        {PROJECTS.map((project) => (
+          <ProjectHotspot
+            key={project.title}
+            position={project.position}
+            label={project.title}
+            tags={project.tags}
+            image={project.image}
+            onProximityChange={handleProximity}
+          />
+        ))}
+
+        <Particles />
+
+        {/* Weather systems */}
+        <WeatherEffects />
+
+        {/* Achievement tracker */}
+        <AchievementTracker />
+      </WeatherProvider>
+    </PhysicsWorld>
   )
 }

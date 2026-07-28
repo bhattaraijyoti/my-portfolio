@@ -70,89 +70,58 @@ const fragmentShader = `
     vec3 dir = normalize(vWorldPosition);
     float elevation = dir.y;
 
-    // ── SUNSET SKY GRADIENT ─────────────────────────────
-    vec3 zenithColor   = vec3(0.08, 0.05, 0.22);  // deep indigo/navy
-    vec3 upperColor    = vec3(0.22, 0.08, 0.32);  // purple
-    vec3 midColor      = vec3(0.72, 0.18, 0.28);  // deep rose/crimson
-    vec3 horizonColor  = vec3(0.98, 0.48, 0.15);  // hot orange
-    vec3 sunGlowColor  = vec3(1.0, 0.65, 0.15);   // golden orange
-    vec3 groundHaze    = vec3(0.35, 0.15, 0.18);  // warm dark
+    // Overcast winter sky — soft grey gradient
+    vec3 zenithColor   = vec3(0.55, 0.58, 0.65);
+    vec3 midColor      = vec3(0.62, 0.65, 0.72);
+    vec3 horizonColor  = vec3(0.72, 0.75, 0.80);
+    vec3 groundHaze    = vec3(0.50, 0.52, 0.58);
 
-    float t = pow(max(elevation, 0.0), 0.5);
     vec3 skyColor;
     if (elevation < 0.15) {
       skyColor = mix(horizonColor, midColor, smoothstep(0.0, 0.15, elevation));
-    } else if (elevation < 0.45) {
-      skyColor = mix(midColor, upperColor, smoothstep(0.15, 0.45, elevation));
+    } else if (elevation < 0.5) {
+      skyColor = mix(midColor, zenithColor, smoothstep(0.15, 0.5, elevation));
     } else {
-      skyColor = mix(upperColor, zenithColor, smoothstep(0.45, 0.9, elevation));
+      skyColor = zenithColor;
     }
 
     if (elevation < 0.0) {
       skyColor = mix(horizonColor, groundHaze, min(-elevation * 4.0, 1.0));
     }
 
-    // ── SUN (low on horizon) ────────────────────────────
+    // Subtle sun glow through clouds
     float sunDot = dot(dir, normalize(uSunDir));
+    float sunWideGlow = pow(max(sunDot, 0.0), 3.0) * 0.25;
+    skyColor += vec3(0.85, 0.82, 0.75) * sunWideGlow;
 
-    // Large warm glow around sun
-    float sunWideGlow = pow(max(sunDot, 0.0), 2.0) * 0.6;
-    skyColor += sunGlowColor * sunWideGlow;
+    float sunHalo = pow(max(sunDot, 0.0), 12.0) * 0.2;
+    skyColor += vec3(0.9, 0.88, 0.82) * sunHalo;
 
-    // Medium halo
-    float sunHalo = pow(max(sunDot, 0.0), 8.0) * 0.5;
-    skyColor += vec3(1.0, 0.55, 0.1) * sunHalo;
-
-    // Inner glow
-    float sunInner = pow(max(sunDot, 0.0), 32.0) * 0.8;
-    skyColor += vec3(1.0, 0.85, 0.4) * sunInner;
-
-    // Sun disc — large and soft for sunset
-    float sunDisc = smoothstep(0.9965, 0.9995, sunDot);
-    vec3 sunColor = vec3(1.0, 0.78, 0.35);
-    skyColor = mix(skyColor, sunColor, sunDisc);
-
-    // ── CLOUDS ──────────────────────────────────────────
+    // Clouds — heavy overcast layer
     if (elevation > -0.05) {
       vec3 cloudPos = dir * 40.0;
-      float scroll = uTime * 0.008;
+      float scroll = uTime * 0.005;
 
-      float n1 = snoise(vec3(cloudPos.x * 0.007 + scroll, cloudPos.z * 0.007, scroll * 0.15));
-      float n2 = snoise(vec3(cloudPos.x * 0.016 + scroll * 1.2, cloudPos.z * 0.013, scroll * 0.3));
-      float n3 = snoise(vec3(cloudPos.x * 0.035 + scroll * 1.8, cloudPos.z * 0.03, scroll * 0.5));
+      float n1 = snoise(vec3(cloudPos.x * 0.005 + scroll, cloudPos.z * 0.005, scroll * 0.1));
+      float n2 = snoise(vec3(cloudPos.x * 0.012 + scroll * 0.8, cloudPos.z * 0.01, scroll * 0.2));
+      float n3 = snoise(vec3(cloudPos.x * 0.025 + scroll * 1.2, cloudPos.z * 0.02, scroll * 0.3));
       float cloudShape = n1 * 0.5 + n2 * 0.35 + n3 * 0.15;
 
-      float coverage = smoothstep(-0.05, 0.5, cloudShape);
-      float elevMask = smoothstep(-0.05, 0.08, elevation) * (1.0 - smoothstep(0.65, 1.0, elevation) * 0.4);
+      // Heavy coverage
+      float coverage = smoothstep(-0.15, 0.6, cloudShape);
+      float elevMask = smoothstep(-0.05, 0.05, elevation) * (1.0 - smoothstep(0.6, 1.0, elevation) * 0.3);
       coverage *= elevMask;
 
-      // Sunset cloud colors: warm pinks, oranges, purples
-      vec3 cloudHighColor = vec3(0.95, 0.42, 0.32);  // warm pink/salmon
-      vec3 cloudLowColor  = vec3(0.55, 0.15, 0.35);  // deep purple shadow
-      vec3 cloudEdgeColor = vec3(1.0, 0.6, 0.18);    // golden rim
+      // Muted winter cloud colors
+      vec3 cloudHighColor = vec3(0.78, 0.80, 0.85);
+      vec3 cloudLowColor  = vec3(0.52, 0.55, 0.62);
+      vec3 cloudColor = mix(cloudLowColor, cloudHighColor, 0.5);
 
-      // Blend based on sun-facing direction
-      float sunFacing = pow(max(sunDot, 0.0), 3.0);
-      vec3 cloudColor = mix(cloudLowColor, cloudHighColor, sunFacing * 0.7 + 0.3);
+      float underside = smoothstep(0.0, 0.2, elevation) * (1.0 - smoothstep(0.2, 0.5, elevation));
+      cloudColor = mix(cloudColor, vec3(0.45, 0.48, 0.55), underside * 0.3);
 
-      // Golden rim light on sun-facing edges
-      float edgeLight = pow(max(sunDot, 0.0), 10.0) * 0.6;
-      cloudColor += cloudEdgeColor * edgeLight;
-
-      // Underside darkening — deeper purple for sunset drama
-      float underside = smoothstep(0.0, 0.25, elevation) * (1.0 - smoothstep(0.25, 0.55, elevation));
-      cloudColor = mix(cloudColor, vec3(0.3, 0.08, 0.2), underside * 0.35);
-
-      skyColor = mix(skyColor, cloudColor, coverage * 0.85);
+      skyColor = mix(skyColor, cloudColor, coverage * 0.8);
     }
-
-    // ── HORIZON GLOW BAND ──────────────────────────────
-    float horizonBand = exp(-abs(elevation - 0.02) * 12.0) * 0.25;
-    skyColor += vec3(1.0, 0.55, 0.15) * horizonBand;
-
-    // Extra warm haze just below horizon
-    float belowHaze = exp(-abs(elevation + 0.03) * 15.0) * 0.12;
-    skyColor += vec3(0.9, 0.35, 0.1) * belowHaze;
 
     gl_FragColor = vec4(skyColor, 1.0);
   }
@@ -163,7 +132,7 @@ export default function Sky() {
 
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
-    uSunDir: { value: new THREE.Vector3(0.5, 0.12, 0.35).normalize() },
+    uSunDir: { value: new THREE.Vector3(0.4, 0.25, 0.3).normalize() },
   }), [])
 
   useFrame((state) => {
@@ -174,7 +143,7 @@ export default function Sky() {
 
   return (
     <mesh>
-      <sphereGeometry args={[90, 32, 32]} />
+      <sphereGeometry args={[90, 24, 24]} />
       <shaderMaterial
         ref={materialRef}
         vertexShader={vertexShader}

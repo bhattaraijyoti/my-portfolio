@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { carStore } from './store'
 
 // ─── TUNABLE PARAMETERS ───────────────────────────────────────────
-const GRASS_COUNT = 990000           // Number of grass blades
+const GRASS_COUNT = 55000          // Number of grass blades
 const FIELD_SIZE = 50               // Radius of grass field
 const BLADE_HEIGHT = 0.45           // Base height of a blade
 const BLADE_WIDTH = 0.06            // Width at base
@@ -16,8 +16,8 @@ const FLUTTER_SPEED = 2.5           // Micro-flutter speed
 const FLUTTER_STRENGTH = 0.03       // Micro-flutter displacement
 const CAR_BEND_RADIUS = 1.8         // How far car bends grass
 const CAR_BEND_STRENGTH = 0.6       // How much car bends grass
-const LOD_INNER_RADIUS = 40         // Full density within this
-const LOD_OUTER_RADIUS = 55         // Grass fades to nothing here
+const LOD_INNER_RADIUS = 35         // Full density within this
+const LOD_OUTER_RADIUS = 50         // Grass fades to nothing here
  
 // ─── CUSTOM SHADER ────────────────────────────────────────────────
 const grassVertexShader = `
@@ -174,9 +174,9 @@ const grassFragmentShader = `
 
   void main() {
     // ─── BASE COLOR WITH HEIGHT GRADIENT ──────────────────
-    vec3 baseColorDark = vColor * vec3(0.22, 0.40, 0.18);
-    vec3 baseColorMid = vColor * vec3(0.32, 0.55, 0.22);
-    vec3 baseColorLight = vColor * vec3(0.48, 0.68, 0.25);
+    vec3 baseColorDark = vColor * vec3(0.85, 0.87, 0.92);
+    vec3 baseColorMid = vColor * vec3(0.90, 0.92, 0.96);
+    vec3 baseColorLight = vColor * vec3(0.96, 0.97, 1.0);
     float h = vHeight;
     vec3 baseColor = h < 0.4
       ? mix(baseColorDark, baseColorMid, h / 0.4)
@@ -186,8 +186,8 @@ const grassFragmentShader = `
     vec3 sunDir = normalize(uSunDirection);
     vec3 viewDir = normalize(cameraPosition - vWorldPosition);
     float backLight = pow(max(dot(viewDir, -sunDir), 0.0), 2.0);
-    float subsurface = backLight * h * 0.4;
-    vec3 sssColor = vec3(0.35, 0.65, 0.15) * subsurface;
+    float subsurface = backLight * h * 0.3;
+    vec3 sssColor = vec3(0.8, 0.85, 0.95) * subsurface;
 
     // ─── FAKE AMBIENT OCCLUSION ───────────────────────────
     float ao = mix(0.25, 1.0, h);
@@ -208,7 +208,7 @@ const grassFragmentShader = `
     // ─── FINAL COLOR ──────────────────────────────────────
     vec3 ambient = baseColor * uAmbientColor * 0.55;
     vec3 lit = baseColor * uSunColor * diffuse;
-    vec3 rim = vec3(0.4, 0.7, 0.2) * rimLight;
+    vec3 rim = vec3(0.85, 0.88, 0.95) * rimLight;
 
     vec3 finalColor = (ambient + lit + rim + sssColor) * ao;
     finalColor += vec3(1.0, 1.0, 0.95) * spec;
@@ -230,7 +230,7 @@ const grassFragmentShader = `
 function createBladeGeometry(): THREE.BufferGeometry {
   // Each blade: 2 segments tall, 3 vertices wide at base, tapers to 1 at tip
   // Triangle strip: 6 vertices total (2 rows of 3)
-  const segments = 3;
+  const segments = 2;
   const positions: number[] = [];
   const indices: number[] = [];
 
@@ -278,40 +278,46 @@ export default function Grass() {
     const col = new Float32Array(GRASS_COUNT * 3)
 
     const colorPalette = [
-      [0.35, 0.55, 0.25],  // deep green
-      [0.40, 0.60, 0.28],  // mid green
-      [0.48, 0.68, 0.30],  // light green
-      [0.42, 0.58, 0.22],  // olive
-      [0.38, 0.52, 0.20],  // dark olive
+      [0.92, 0.93, 0.96],  // white
+      [0.88, 0.90, 0.94],  // off-white
+      [0.95, 0.96, 0.98],  // bright white
+      [0.85, 0.87, 0.92],  // cool white
+      [0.90, 0.92, 0.95],  // soft white
     ]
+
+    // Road geometry: extends along Z-axis, 4.4 wide (+2.2/-2.2), shoulders to ±2.8
+    const ROAD_HALF = 2.8    // asphalt + shoulder
+    const EDGE_MIN = 3.2     // minimum distance from center to start spawning grass
+    const EDGE_MAX = 4.8     // maximum distance from center (tight strip)
+    const ROAD_LENGTH = 55
 
     for (let i = 0; i < GRASS_COUNT; i++) {
       const i3 = i * 3
+      let x: number, z: number
+      let safe = false
 
-      // Scatter across circular field with randomization (rejection sampling: never on road)
-      let x = 0
-      let z = 0
-      while (true) {
-        const angle = Math.random() * Math.PI * 2
-        const radius = Math.sqrt(Math.random()) * FIELD_SIZE
-        x = Math.cos(angle) * radius
-        z = Math.sin(angle) * radius
-        // Road exclusion: supports multiple roads.
-        const ROAD_HALF_WIDTH = 2.2
-        const ROAD_BANDS = [
-          { axis: 'x', center: 0 },
-          { axis: 'z', center: 0 },
-          // Add additional roads here, e.g.
-          // { axis: 'x', center: 12 },
-          // { axis: 'z', center: -8 },
-        ]
-        const onRoad = ROAD_BANDS.some((road) =>
-          road.axis === 'x'
-            ? Math.abs(x - road.center) <= ROAD_HALF_WIDTH
-            : Math.abs(z - road.center) <= ROAD_HALF_WIDTH
-        )
-        if (!onRoad) break
+      while (!safe) {
+        // Random side of either road
+        if (Math.random() < 0.5) {
+          // Main road (Z-axis): spawn left or right
+          const sign = Math.random() < 0.5 ? 1 : -1
+          x = sign * (EDGE_MIN + Math.random() * (EDGE_MAX - EDGE_MIN))
+          z = (Math.random() - 0.5) * ROAD_LENGTH * 2
+        } else {
+          // Cross road (X-axis): spawn top or bottom
+          const sign = Math.random() < 0.5 ? 1 : -1
+          x = (Math.random() - 0.5) * ROAD_LENGTH * 2
+          z = sign * (EDGE_MIN + Math.random() * (EDGE_MAX - EDGE_MIN))
+        }
+
+      // Add jitter
+      x += (Math.random() - 0.5) * 0.3
+      z += (Math.random() - 0.5) * 0.3
+
+        // Must be clear of BOTH roads (main Z-road and cross X-road)
+        safe = Math.abs(x) > ROAD_HALF && Math.abs(z) > ROAD_HALF
       }
+
       off[i3] = x
       off[i3 + 1] = 0
       off[i3 + 2] = z
@@ -354,10 +360,10 @@ export default function Grass() {
     uCarBendRadius: { value: CAR_BEND_RADIUS },
     uCarBendStrength: { value: CAR_BEND_STRENGTH },
     uCameraRadius: { value: LOD_OUTER_RADIUS },
-    uSunDirection: { value: new THREE.Vector3(0.4, 0.7, 0.3).normalize() },
-    uSunColor: { value: new THREE.Vector3(1.0, 0.92, 0.78) },
-    uAmbientColor: { value: new THREE.Vector3(0.4, 0.5, 0.55) },
-    uFogColor: { value: new THREE.Vector3(0.77, 0.47, 0.25) },
+    uSunDirection: { value: new THREE.Vector3(0.4, 0.5, 0.3).normalize() },
+    uSunColor: { value: new THREE.Vector3(0.85, 0.88, 0.95) },
+    uAmbientColor: { value: new THREE.Vector3(0.6, 0.65, 0.75) },
+    uFogColor: { value: new THREE.Vector3(0.69, 0.77, 0.85) },
   }), [])
 
   // Set instance attributes on first mount

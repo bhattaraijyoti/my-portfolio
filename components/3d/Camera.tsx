@@ -11,6 +11,28 @@ const SPEED_OFFSET = new THREE.Vector3(0, 1.5, 3)
 const _dynamicOffset = new THREE.Vector3()
 const _speedContrib = new THREE.Vector3()
 
+// Frame-rate independent smooth damp (each axis independent)
+function smoothDamp(
+  current: number, target: number,
+  vel: { value: number }, smoothTime: number, dt: number
+): number {
+  const omega = 2 / Math.max(smoothTime, 0.0001)
+  const x = omega * dt
+  const exp = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x)
+  const change = current - target
+  const temp = (vel.value + omega * change) * dt
+  vel.value = (vel.value - omega * temp) * exp
+  return target + (change + temp) * exp
+}
+
+// Per-axis velocity accumulators
+const posVelX = { value: 0 }
+const posVelY = { value: 0 }
+const posVelZ = { value: 0 }
+const lookVelX = { value: 0 }
+const lookVelY = { value: 0 }
+const lookVelZ = { value: 0 }
+
 export default function ChaseCamera() {
   const { camera } = useThree()
   const targetPos = useRef(new THREE.Vector3())
@@ -38,9 +60,17 @@ export default function ChaseCamera() {
     targetLook.current.x += Math.sin(angle) * lookAhead
     targetLook.current.z += Math.cos(angle) * lookAhead
 
-    const lerpSpeed = THREE.MathUtils.lerp(4, 2.5, speedFactor)
-    currentPos.current.lerp(targetPos.current, lerpSpeed * dt)
-    currentLook.current.lerp(targetLook.current, lerpSpeed * dt)
+    // Frame-rate independent smooth damp — each axis has its own velocity
+    const smoothTime = THREE.MathUtils.lerp(0.18, 0.35, speedFactor)
+
+    currentPos.current.x = smoothDamp(currentPos.current.x, targetPos.current.x, posVelX, smoothTime, dt)
+    currentPos.current.y = smoothDamp(currentPos.current.y, targetPos.current.y, posVelY, smoothTime, dt)
+    currentPos.current.z = smoothDamp(currentPos.current.z, targetPos.current.z, posVelZ, smoothTime, dt)
+
+    const lookSmooth = smoothTime * 0.8
+    currentLook.current.x = smoothDamp(currentLook.current.x, targetLook.current.x, lookVelX, lookSmooth, dt)
+    currentLook.current.y = smoothDamp(currentLook.current.y, targetLook.current.y, lookVelY, lookSmooth, dt)
+    currentLook.current.z = smoothDamp(currentLook.current.z, targetLook.current.z, lookVelZ, lookSmooth, dt)
 
     if (speed > 5) {
       const shakeIntensity = (speed - 5) / 25
