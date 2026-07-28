@@ -15,7 +15,6 @@ import Minimap from '../ui/Minimap'
 import ToastContainer, { useToasts } from '../ui/DiscoveryToast'
 import Whispers from '../ui/Whispers'
 import Leaderboard from '../ui/Leaderboard'
-import Achievements from '../ui/Achievements'
 import { playDiscoveryChime, playWhoosh } from '../../lib/sound'
 
 const PROJECTS = [
@@ -199,7 +198,6 @@ export default function Scene() {
 
       <Whispers />
       <Leaderboard />
-      <Achievements />
 
       <ProjectPanel
         project={project || null}
