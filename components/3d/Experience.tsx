@@ -11,37 +11,31 @@ import Sky from './Sky'
 import ProjectHotspot from './ProjectHotspot'
 import Particles from './Particles'
 import DustTrail from './DustTrail'
+import Bricks from './Bricks'
+import Butterflies from './Butterflies'
+import Flowers from './Flowers'
+import GardenDecor from './GardenDecor'
+import Fireflies from './Fireflies'
+import SakuraTrees from './SakuraTrees'
 import { carStore } from './store'
-
-function FloatingIsland({ position, size = [2, 0.3, 2], color = '#2a4a2a' }: {
-  position: [number, number, number]
-  size?: [number, number, number]
-  color?: string
-}) {
-  return (
-    <group position={position}>
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={size} />
-        <meshStandardMaterial color={color} roughness={0.9} metalness={0.05} />
-      </mesh>
-    </group>
-  )
-}
 
 const PROJECTS = [
   {
     title: 'Treatss',
-    position: [-8, 0, -5] as [number, number, number],
+    position: [-14, 0, -4] as [number, number, number],
+    tags: 'Product Design / Frontend / Local Commerce',
     image: '/treatss.png',
   },
   {
     title: 'Tech Club',
-    position: [6, 0, -10] as [number, number, number],
+    position: [12, 0, -18] as [number, number, number],
+    tags: 'Community Platform / Interface Design',
     image: '/tech.png',
   },
   {
     title: 'Tulsipur Dang',
-    position: [-3, 0, -12] as [number, number, number],
+    position: [-5, 0, -26] as [number, number, number],
+    tags: 'Civic Tech / Content System',
     image: '/tulsipurdang.png',
   },
 ]
@@ -75,48 +69,54 @@ export default function Experience({ onProjectProximity, onTeleportReady }: Expe
       <Sky />
       <ChaseCamera />
 
-      <fog attach="fog" args={['#b8cfe0', 40, 120]} />
+      <fog attach="fog" args={['#c47840', 45, 110]} />
 
+      {/* Main sun — low and warm */}
       <directionalLight
-        position={[15, 30, 12]}
-        intensity={3.2}
-        color="#fff0d0"
+        position={[20, 8, 14]}
+        intensity={4.0}
+        color="#ff9040"
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
-        shadow-camera-far={70}
-        shadow-camera-left={-30}
-        shadow-camera-right={30}
-        shadow-camera-top={30}
-        shadow-camera-bottom={-30}
+        shadow-camera-far={60}
+        shadow-camera-left={-25}
+        shadow-camera-right={25}
+        shadow-camera-top={25}
+        shadow-camera-bottom={-25}
         shadow-bias={-0.0003}
         shadow-normalBias={0.015}
         shadow-radius={4}
       />
 
+      {/* Cool fill from opposite side */}
       <directionalLight
-        position={[-20, 12, -10]}
-        intensity={0.5}
-        color="#a0b8d8"
+        position={[-15, 15, -12]}
+        intensity={0.4}
+        color="#8090c0"
       />
 
+      {/* Warm bounce from ground */}
       <directionalLight
-        position={[0, 8, -30]}
-        intensity={0.25}
-        color="#ffd8a0"
+        position={[0, 3, -20]}
+        intensity={0.3}
+        color="#ff8860"
       />
 
-      <ambientLight intensity={0.45} color="#c0d0e8" />
+      <ambientLight intensity={0.35} color="#d09060" />
 
-      <hemisphereLight args={['#90b8e0', '#3a5a2a', 0.7]} />
+      <hemisphereLight args={['#c07040', '#2a3a1a', 0.8]} />
 
-      <pointLight position={[0, 25, 0]} intensity={0.15} distance={80} color="#ffffff" />
-
-      <FloatingIsland position={[15, 3, -8]} size={[3, 0.3, 2.5]} color="#2a4a2a" />
-      <FloatingIsland position={[-10, 4, -15]} size={[2.5, 0.35, 2]} color="#2a3a2a" />
-      <FloatingIsland position={[8, 2.5, 12]} size={[2, 0.25, 3]} color="#2a4a2a" />
+      <pointLight position={[0, 25, 0]} intensity={0.1} distance={80} color="#ffcc88" />
 
       <World />
+
+      <Bricks />
+      <Flowers />
+      <Butterflies />
+      <GardenDecor />
+      <Fireflies />
+      <SakuraTrees />
 
       <group userData={{ isCar: true }}>
         <Car />
@@ -128,7 +128,7 @@ export default function Experience({ onProjectProximity, onTeleportReady }: Expe
         scale={100}
         blur={2}
         far={20}
-        color="#1a3a1a"
+        color="#2a1a10"
       />
 
       <DustTrail />
@@ -138,6 +138,7 @@ export default function Experience({ onProjectProximity, onTeleportReady }: Expe
           key={project.title}
           position={project.position}
           label={project.title}
+          tags={project.tags}
           image={project.image}
           onProximityChange={handleProximity}
         />

@@ -5,7 +5,7 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import Grass from './Grass'
 
-const FOG_COLOR = new THREE.Color('#b8cfe0')
+const FOG_COLOR = new THREE.Color('#c47840')
 
 // ─── GROUND SHADER ────────────────────────────────────────────────
 // Blends from ground green near center → dirt brown → fog color at edges
@@ -230,13 +230,13 @@ function RoadIntersection() {
 }
 
 // ─── TREE ─────────────────────────────────────────────────────────
-function Tree({ position, scale = 1 }: { position: [number, number, number]; scale?: number }) {
+function Tree({ position, scale = 1, foliageRef, seed }: {
+  position: [number, number, number]
+  scale?: number
+  foliageRef: React.RefObject<THREE.Group>
+  seed: number
+}) {
   const trunkRef = useRef<THREE.Mesh>(null!)
-  const foliageRef = useRef<THREE.Group>(null!)
-
-  const seed = useMemo(() => {
-    return Math.abs(position[0] * 374761393 + position[1] * 668265263 + position[2] * 2147483647) % 1000
-  }, [position])
 
   const trunkGeometry = useMemo(() => {
     const geometry = new THREE.CylinderGeometry(0.07, 0.1, 1.2, 8, 5, false)
@@ -301,13 +301,6 @@ function Tree({ position, scale = 1 }: { position: [number, number, number]; sca
     return meshes
   }, [seed])
 
-  useFrame(({ clock }) => {
-    if (!foliageRef.current) return
-    const t = clock.elapsedTime
-    foliageRef.current.rotation.z = 0.05 * Math.sin(t * 2 + seed)
-    foliageRef.current.rotation.x = 0.03 * Math.cos(t * 1.5 + seed)
-  })
-
   const trunkColor = '#4a3a2a'
 
   return (
@@ -338,7 +331,7 @@ function Tree({ position, scale = 1 }: { position: [number, number, number]; sca
 function DistantHills() {
   const hills = useMemo(() => {
     const meshes: React.ReactElement[] = []
-    const hillCount = 35
+    const hillCount = 30
     for (let i = 0; i < hillCount; i++) {
       const angle = (i / hillCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.3
       const dist = 55 + Math.random() * 35
@@ -348,12 +341,12 @@ function DistantHills() {
       const scaleY = 1.5 + Math.random() * 4.0
       const scaleZ = 8 + Math.random() * 14
 
-      // Smooth fog blending: closer to fog color as distance increases
+      // Sunset: warm base colors blending toward sunset fog
       const fogBlend = Math.min((dist - 55) / 35, 1)
-      const baseGreen = 0.30 + Math.random() * 0.1
-      const r = Math.round((0.25 + fogBlend * 0.48) * 255)
-      const g = Math.round((baseGreen + fogBlend * 0.42) * 255)
-      const b = Math.round((0.22 + fogBlend * 0.48) * 255)
+      const warmth = Math.random() * 0.1
+      const r = Math.round((0.35 + warmth + fogBlend * 0.41) * 255)
+      const g = Math.round((0.18 + warmth * 0.5 + fogBlend * 0.29) * 255)
+      const b = Math.round((0.18 + warmth * 0.3 + fogBlend * 0.08) * 255)
       meshes.push(
         <mesh
           key={`hill-${i}`}
@@ -380,7 +373,7 @@ function DistantHills() {
 function DistantTreeLine() {
   const trees = useMemo(() => {
     const meshes: React.ReactElement[] = []
-    const count = 120
+    const count = 80
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.12
       const dist = 42 + Math.random() * 12
@@ -415,13 +408,16 @@ function DistantTreeLine() {
 
 // ─── MAIN WORLD ───────────────────────────────────────────────────
 export default function World() {
+  const foliageRefs = useRef<(THREE.Group | null)[]>([])
+
   const trees = useMemo(() => {
     const positions: [number, number, number][] = []
     const scales: number[] = []
+    const seeds: number[] = []
     const FIELD_RADIUS = 35
     const ROAD_HALF_WIDTH = 2.5
     const MIN_TREE_SPACING = 2.0
-    const TREE_COUNT = 60
+    const TREE_COUNT = 50
 
     for (let i = 0; i < TREE_COUNT; i++) {
       let x = 0, z = 0, attempts = 0
@@ -445,10 +441,24 @@ export default function World() {
       if (attempts < 50) {
         positions.push([x, 0, z])
         scales.push(0.7 + Math.random() * 0.6)
+        seeds.push(Math.abs(x * 374761393 + z * 2147483647) % 1000)
       }
     }
-    return { positions, scales }
+    return { positions, scales, seeds }
   }, [])
+
+  // Single consolidated useFrame for all tree sway — was 50 separate callbacks
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime
+    const refs = foliageRefs.current
+    for (let i = 0; i < refs.length; i++) {
+      const foliage = refs[i]
+      if (!foliage) continue
+      const s = trees.seeds[i]
+      foliage.rotation.z = 0.05 * Math.sin(t * 2 + s)
+      foliage.rotation.x = 0.03 * Math.cos(t * 1.5 + s)
+    }
+  })
 
   return (
     <>
@@ -460,7 +470,13 @@ export default function World() {
       <DistantHills />
       <DistantTreeLine />
       {trees.positions.map((pos, idx) => (
-        <Tree key={idx} position={pos} scale={trees.scales[idx]} />
+        <Tree
+          key={idx}
+          position={pos}
+          scale={trees.scales[idx]}
+          seed={trees.seeds[idx]}
+          foliageRef={{ get current() { return foliageRefs.current[idx] }, set current(v) { foliageRefs.current[idx] = v } } as React.RefObject<THREE.Group>}
+        />
       ))}
     </>
   )

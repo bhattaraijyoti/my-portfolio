@@ -357,7 +357,7 @@ export default function Grass() {
     uSunDirection: { value: new THREE.Vector3(0.4, 0.7, 0.3).normalize() },
     uSunColor: { value: new THREE.Vector3(1.0, 0.92, 0.78) },
     uAmbientColor: { value: new THREE.Vector3(0.4, 0.5, 0.55) },
-    uFogColor: { value: new THREE.Vector3(0.72, 0.81, 0.88) },
+    uFogColor: { value: new THREE.Vector3(0.77, 0.47, 0.25) },
   }), [])
 
   // Set instance attributes on first mount

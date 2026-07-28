@@ -8,6 +8,8 @@ import { carStore } from './store'
 const BASE_OFFSET = new THREE.Vector3(0, 8, 12)
 const LOOK_OFFSET = new THREE.Vector3(0, 0.5, -5)
 const SPEED_OFFSET = new THREE.Vector3(0, 1.5, 3)
+const _dynamicOffset = new THREE.Vector3()
+const _speedContrib = new THREE.Vector3()
 
 export default function ChaseCamera() {
   const { camera } = useThree()
@@ -24,13 +26,11 @@ export default function ChaseCamera() {
     const speed = carStore.velocity.length()
 
     const speedFactor = Math.min(speed / 20, 1)
-    const dynamicOffset = BASE_OFFSET.clone().add(
-      SPEED_OFFSET.clone().multiplyScalar(speedFactor * 0.4)
-    )
+    _speedContrib.copy(SPEED_OFFSET).multiplyScalar(speedFactor * 0.4)
+    _dynamicOffset.copy(BASE_OFFSET).add(_speedContrib)
+    _dynamicOffset.y += speedFactor * 2
 
-    dynamicOffset.y += speedFactor * 2
-
-    targetPos.current.copy(carPos).add(dynamicOffset)
+    targetPos.current.copy(carPos).add(_dynamicOffset)
     targetLook.current.copy(carPos).add(LOOK_OFFSET)
 
     const angle = carStore.rotation

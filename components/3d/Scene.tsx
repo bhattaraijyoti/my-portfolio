@@ -10,11 +10,15 @@ import ProjectPanel from '../ui/ProjectPanel'
 import GameUI from '../ui/GameUI'
 import ProjectDock from '../ui/ProjectDock'
 import ProximityIndicator from '../ui/ProximityIndicator'
+import Sidebar from '../ui/Sidebar'
+import Minimap from '../ui/Minimap'
+import ToastContainer, { useToasts } from '../ui/DiscoveryToast'
+import { playDiscoveryChime, playWhoosh } from '../../lib/sound'
 
 const PROJECTS = [
   {
     title: 'Treatss',
-    position: [-8, 0, -5] as [number, number, number],
+    position: [-14, 0, -4] as [number, number, number],
     tags: 'Product Design / Frontend / Local Commerce',
     description: 'A calmer ordering experience for a growing food-delivery market in Tulsipur. Designed and built from concept to launch.',
     link: 'https://treatss.com',
@@ -22,7 +26,7 @@ const PROJECTS = [
   },
   {
     title: 'Tech Club',
-    position: [6, 0, -10] as [number, number, number],
+    position: [12, 0, -18] as [number, number, number],
     tags: 'Community Platform / Interface Design',
     description: 'A focused hub for students and creators to learn, share, and collaborate. Built to replace scattered groups with one clean interface.',
     link: 'https://techclubb.vercel.app',
@@ -30,7 +34,7 @@ const PROJECTS = [
   },
   {
     title: 'Tulsipur Dang',
-    position: [-3, 0, -12] as [number, number, number],
+    position: [-5, 0, -26] as [number, number, number],
     tags: 'Civic Tech / Content System',
     description: 'A digital home for local events, news, and technology initiatives. Community-driven, built to support Tulsipur as a growing tech hub.',
     link: 'https://tulsipurdang.com',
@@ -43,15 +47,28 @@ export default function Scene() {
   const [showPanel, setShowPanel] = useState(false)
   const [discovered, setDiscovered] = useState<Set<string>>(new Set())
   const teleportRef = useRef<((pos: [number, number, number]) => void) | null>(null)
+  const [showMinimap, setShowMinimap] = useState(true)
+  const { toasts, addToast, dismissToast } = useToasts()
 
   const handleProjectProximity = useCallback((title: string | null, isNear: boolean) => {
     if (isNear && title) {
       setActiveProject(title)
-      setDiscovered((prev) => new Set(prev).add(title))
+      setDiscovered((prev) => {
+        if (prev.has(title)) return prev
+        const next = new Set(prev).add(title)
+        const idx = PROJECTS.findIndex((p) => p.title === title)
+        addToast(
+          'New project discovered!',
+          title,
+          idx >= 0 ? idx : 0
+        )
+        playDiscoveryChime()
+        return next
+      })
     } else if (!isNear) {
       setActiveProject(null)
     }
-  }, [])
+  }, [addToast])
 
   const handleTeleport = useCallback((title: string) => {
     const project = PROJECTS.find((p) => p.title === title)
@@ -62,6 +79,7 @@ export default function Scene() {
         project.position[2] + 6,
       ]
       teleportRef.current(offsetPos)
+      playWhoosh()
       setActiveProject(title)
       setShowPanel(true)
       setDiscovered((prev) => new Set(prev).add(title))
@@ -90,6 +108,14 @@ export default function Scene() {
         setShowPanel(false)
         setTimeout(() => setActiveProject(null), 500)
       }
+      if (e.key === 'r' || e.key === 'R') {
+        if (teleportRef.current) {
+          teleportRef.current([0, 0.35, 5])
+        }
+      }
+      if (e.key === 'm' || e.key === 'M') {
+        setShowMinimap((v) => !v)
+      }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
@@ -110,7 +136,7 @@ export default function Scene() {
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.0,
         }}
-        dpr={[1, 1.5]}
+        dpr={[1, 2]}
         style={{ background: '#000' }}
       >
         <color attach="background" args={['#000']} />
@@ -150,6 +176,20 @@ export default function Scene() {
         projects={PROJECTS}
         activeProject={activeProject}
       />
+
+      <Sidebar
+        discoveredProjects={Array.from(discovered)}
+        totalProjects={PROJECTS.length}
+        onRespawn={() => {
+          if (teleportRef.current) {
+            teleportRef.current([0, 0.35, 5])
+          }
+        }}
+      />
+
+      <Minimap visible={showMinimap} />
+
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
       <ProjectPanel
         project={project || null}
