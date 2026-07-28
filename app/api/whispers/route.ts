@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   }
 
   const whisper = {
-    id: crypto.randomUUID(),
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
     message: message.slice(0, MAX_MESSAGE_LENGTH),
     flag: flag.toLowerCase(),
     author: author || 'Anonymous',
