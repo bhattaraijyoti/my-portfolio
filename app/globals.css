@@ -1264,7 +1264,7 @@ img { display: block; max-width: 100%; }
   border: 1px solid rgba(255,255,255,0.04);
   border-radius: 10px;
   background: rgba(255,255,255,0.015);
-  transition: all 0.3s var(--ease-out-expo);
+  transition: border-color 0.3s, background 0.3s, transform 0.3s;
 }
 .sidebar__medal.is-unlocked {
   border-color: rgba(0, 200, 83, 0.2);
@@ -1610,7 +1610,7 @@ img { display: block; max-width: 100%; }
   color: rgba(255,255,255,0.7);
   font-size: 11px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
   will-change: transform;
 }
 .whispers__toggle:hover {
@@ -1690,7 +1690,7 @@ img { display: block; max-width: 100%; }
   color: #fff;
   font-size: 11px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 }
 .whispers__send:hover:not(:disabled) {
   background: rgba(255,255,255,0.2);
@@ -1732,7 +1732,7 @@ img { display: block; max-width: 100%; }
   color: rgba(255,255,255,0.7);
   font-size: 11px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
   will-change: transform;
 }
 .leaderboard__toggle:hover {
