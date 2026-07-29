@@ -140,16 +140,8 @@ export const ACHIEVEMENTS: Achievement[] = [
     hidden: true,
   },
 
-  // ─── SOCIAL ─────────────────────────────────────────
-  {
-    id: 'first_whisper',
-    name: 'Whisperer',
-    description: 'Leave your first whisper',
-    icon: '💬',
-    category: 'social',
-    hidden: false,
-  },
-  {
+   // ─── SOCIAL ─────────────────────────────────────────
+   {
     id: 'cookie_counter',
     name: 'Cookie Monster',
     description: 'Click the cookie counter 10 times',

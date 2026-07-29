@@ -59,7 +59,7 @@ const FLOWER_COLORS = [
   '#fdba74',
 ]
 
-const COUNT = 800
+const COUNT = 200
 const PETALS_PER = 5
 
 interface FlowerData {
@@ -144,8 +144,8 @@ export default function Flowers() {
     petalRef.current.instanceMatrix.needsUpdate = true
   }, [flowers, dummy])
 
-  // Animation — only animate flowers within 15 units of the car
-  const ANIM_RADIUS_SQ = 15 * 15
+  // Animation — only animate flowers within 8 units of the car
+  const ANIM_RADIUS_SQ = 8 * 8
   useFrame((state) => {
     if (!stemRef.current || !centerRef.current || !petalRef.current) return
     const t = state.clock.elapsedTime

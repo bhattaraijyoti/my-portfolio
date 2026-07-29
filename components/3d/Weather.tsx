@@ -209,7 +209,7 @@ export function Rain() {
 // ═══════════════════════════════════════════════════════════════
 // SNOW SYSTEM
 // ═══════════════════════════════════════════════════════════════
-const SNOW_COUNT = 1200
+const SNOW_COUNT = 250
 const SNOW_RADIUS = 25
 
 export function Snow() {

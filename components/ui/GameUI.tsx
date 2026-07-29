@@ -61,7 +61,7 @@ export default function GameUI({ projectCount = 3, discoveredCount = 0 }: GameUI
       {/* Header */}
       <header className="topbar">
         <div className="topbar__left">
-          <span className="topbar__name">Jyoti Bhattarai</span>
+          <span className="topbar__name"></span>
           <span className="topbar__sep">&mdash;</span>
           <span className="topbar__sub">Portfolio 2026</span>
         </div>

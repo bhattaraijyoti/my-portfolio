@@ -115,8 +115,8 @@ export default function Experience({ onProjectProximity, onTeleportReady }: Expe
           intensity={2.5}
           color="#d0d8e8"
           castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
+          shadow-mapSize-width={512}
+          shadow-mapSize-height={512}
           shadow-camera-far={50}
           shadow-camera-left={-20}
           shadow-camera-right={20}

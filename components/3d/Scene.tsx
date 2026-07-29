@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useState, useEffect, useRef, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Environment } from '@react-three/drei'
-import { EffectComposer, Bloom, Vignette, SMAA } from '@react-three/postprocessing'
+import { EffectComposer, Vignette } from '@react-three/postprocessing'
 import * as THREE from 'three'
 import Experience from './Experience'
 import ProjectPanel from '../ui/ProjectPanel'
@@ -13,7 +13,6 @@ import ProximityIndicator from '../ui/ProximityIndicator'
 import Sidebar from '../ui/Sidebar'
 import Minimap from '../ui/Minimap'
 import ToastContainer, { useToasts } from '../ui/DiscoveryToast'
-import Whispers from '../ui/Whispers'
 import Leaderboard from '../ui/Leaderboard'
 import { playDiscoveryChime, playWhoosh } from '../../lib/sound'
 
@@ -140,7 +139,7 @@ export default function Scene() {
           stencil: false,
           depth: true,
         }}
-        dpr={[1, 2.5]}
+        dpr={[0.75, 1]}
         style={{ background: '#000' }}
       >
         <color attach="background" args={['#000']} />
@@ -154,14 +153,7 @@ export default function Scene() {
           <Environment preset="sunset" environmentIntensity={0.6} />
         </Suspense>
 
-        <EffectComposer multisampling={2}>
-          <SMAA />
-          <Bloom
-            intensity={0.35}
-            luminanceThreshold={0.85}
-            luminanceSmoothing={0.6}
-            mipmapBlur
-          />
+        <EffectComposer multisampling={0}>
           <Vignette
             offset={0.25}
             darkness={0.35}
@@ -196,7 +188,6 @@ export default function Scene() {
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
-      <Whispers />
       <Leaderboard />
 
       <ProjectPanel

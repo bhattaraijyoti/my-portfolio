@@ -214,7 +214,6 @@ function ProjectCard({
 }) {
   const groupRef = useRef<THREE.Group>(null!)
   const borderRef = useRef<THREE.MeshStandardMaterial>(null!)
-  const ctaRef = useRef<THREE.Group>(null!)
   const baseY = useRef(2.2)
 
   const initials = label
@@ -239,11 +238,6 @@ function ProjectCard({
 
     if (borderRef.current) {
       borderRef.current.emissiveIntensity = isNear ? 2.2 + Math.sin(t * 2) * 0.6 : 0.6
-    }
-
-    if (ctaRef.current) {
-      const targetCta = isNear ? 1 : 0
-      ctaRef.current.scale.setScalar(THREE.MathUtils.lerp(ctaRef.current.scale.x, targetCta, 0.08))
     }
   })
 
@@ -321,20 +315,7 @@ function ProjectCard({
           </Text>
         </group>
 
-        {/* CTA when near — always rendered, scaled in/out via useFrame */}
-        <group ref={ctaRef} position={[0, -H / 2 - 0.26, 0.01]} scale={[0, 0, 0]}>
-          <mesh position={[0, 0, -0.005]}>
-            <planeGeometry args={[2.2, 0.55]} />
-            <meshBasicMaterial color={accentColor} transparent opacity={0.15} depthWrite={false} />
-          </mesh>
-          <RoundedBox args={[1.6, 0.32, 0.04]} radius={0.16} smoothness={2}>
-            <meshBasicMaterial color={accentColor} />
-          </RoundedBox>
-          <Text position={[0, 0, 0.03]} fontSize={0.1} color="#0a0e0c" anchorX="center" anchorY="middle" font="/Inter-Regular.ttf" letterSpacing={0.12}>
-            PRESS ENTER
-          </Text>
-        </group>
-      </Billboard>
+       </Billboard>
     </group>
   )
 }

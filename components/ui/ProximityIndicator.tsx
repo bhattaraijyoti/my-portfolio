@@ -27,7 +27,6 @@ export default function ProximityIndicator({ projects, activeProject }: Proximit
       let closestNearTitle = ''
 
       for (const project of projects) {
-        if (project.title === activeProject) continue
         const dx = project.position[0] - carPos.x
         const dz = project.position[2] - carPos.z
         const distance = Math.sqrt(dx * dx + dz * dz)
@@ -53,14 +52,18 @@ export default function ProximityIndicator({ projects, activeProject }: Proximit
     return () => cancelAnimationFrame(rafRef.current)
   }, [projects, activeProject])
 
-  if (activeProject) return null
-
   if (isClose) {
     return (
       <div className="proximity-indicator proximity-indicator--near">
         <span className="proximity-indicator__pulse" />
         <span className="proximity-indicator__label">{closeTitle}</span>
-        <span className="proximity-indicator__action">Press Enter</span>
+        <span className="proximity-indicator__cta">
+          <span className="proximity-indicator__cta-pill">
+            <span className="proximity-indicator__cta-icon">▼</span>
+            <span className="proximity-indicator__cta-text">PRESS ENTER</span>
+            <span className="proximity-indicator__cta-icon">▲</span>
+          </span>
+        </span>
       </div>
     )
   }

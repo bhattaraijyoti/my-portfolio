@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { carStore } from './store'
 
 // ─── TUNABLE PARAMETERS ───────────────────────────────────────────
-const GRASS_COUNT = 55000          // Number of grass blades
+const GRASS_COUNT = 15000          // Number of grass blades
 const FIELD_SIZE = 50               // Radius of grass field
 const BLADE_HEIGHT = 0.45           // Base height of a blade
 const BLADE_WIDTH = 0.06            // Width at base
@@ -16,8 +16,8 @@ const FLUTTER_SPEED = 2.5           // Micro-flutter speed
 const FLUTTER_STRENGTH = 0.03       // Micro-flutter displacement
 const CAR_BEND_RADIUS = 1.8         // How far car bends grass
 const CAR_BEND_STRENGTH = 0.6       // How much car bends grass
-const LOD_INNER_RADIUS = 35         // Full density within this
-const LOD_OUTER_RADIUS = 50         // Grass fades to nothing here
+const LOD_INNER_RADIUS = 14         // Full density within this
+const LOD_OUTER_RADIUS = 28         // Grass fades to nothing here
  
 // ─── CUSTOM SHADER ────────────────────────────────────────────────
 const grassVertexShader = `
@@ -32,10 +32,6 @@ const grassVertexShader = `
   uniform float uBladeWidth;
   uniform float uLodInner;
   uniform float uLodOuter;
-  uniform vec3 uCarPosition;
-  uniform float uCarBendRadius;
-  uniform float uCarBendStrength;
-  uniform float uCameraRadius;
 
   attribute vec3 instanceOffset;   // xyz position
   attribute float instanceRotation; // y-axis rotation in radians
@@ -47,54 +43,7 @@ const grassVertexShader = `
   varying float vAoFactor;         // for ambient occlusion
   varying vec3 vWorldPosition;
 
-  // Simplex noise helpers
-  vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec4 permute(vec4 x) { return mod289(((x * 34.0) + 1.0) * x); }
-  vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
 
-  float snoise(vec3 v) {
-    const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0);
-    const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-    vec3 i = floor(v + dot(v, C.yyy));
-    vec3 x0 = v - i + dot(i, C.xxx);
-    vec3 g = step(x0.yzx, x0.xyz);
-    vec3 l = 1.0 - g;
-    vec3 i1 = min(g.xyz, l.zxy);
-    vec3 i2 = max(g.xyz, l.zxy);
-    vec3 x1 = x0 - i1 + C.xxx;
-    vec3 x2 = x0 - i2 + C.yyy;
-    vec3 x3 = x0 - D.yyy;
-    i = mod289(i);
-    vec4 p = permute(permute(permute(
-      i.z + vec4(0.0, i1.z, i2.z, 1.0))
-      + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-      + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-    float n_ = 0.142857142857;
-    vec3 ns = n_ * D.wyz - D.xzx;
-    vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-    vec4 x_ = floor(j * ns.z);
-    vec4 y_ = floor(j - 7.0 * x_);
-    vec4 x = x_ * ns.x + ns.yyyy;
-    vec4 y = y_ * ns.x + ns.yyyy;
-    vec4 h = 1.0 - abs(x) - abs(y);
-    vec4 b0 = vec4(x.xy, y.xy);
-    vec4 b1 = vec4(x.zw, y.zw);
-    vec4 s0 = floor(b0) * 2.0 + 1.0;
-    vec4 s1 = floor(b1) * 2.0 + 1.0;
-    vec4 sh = -step(h, vec4(0.0));
-    vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
-    vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
-    vec3 p0 = vec3(a0.xy, h.x);
-    vec3 p1 = vec3(a0.zw, h.y);
-    vec3 p2 = vec3(a1.xy, h.z);
-    vec3 p3 = vec3(a1.zw, h.w);
-    vec4 norm = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
-    p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
-    vec4 m = max(0.6 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0);
-    m = m * m;
-    return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
-  }
 
   void main() {
     // Local vertex position: blade is a thin triangle strip
@@ -116,28 +65,16 @@ const grassVertexShader = `
     // World position of this blade's base
     vec3 worldBase = instanceOffset;
 
-    // Main wind sway — large noise wave across the field
+    // Simple wind sway using cheap trig (no noise)
     float windPhase = worldBase.x * 0.08 + worldBase.z * 0.06 + uTime * uWindSpeed;
-    float windNoise = snoise(vec3(windPhase, 0.0, worldBase.z * 0.04));
-    float windDisplace = windNoise * uWindStrength * vHeight * vHeight;
+    float windDisplace = sin(windPhase) * uWindStrength * vHeight * vHeight;
 
-    // Second faster noise layer for micro-flutter
+    // Second layer for micro-flutter
     float flutterPhase = worldBase.x * 0.25 + worldBase.z * 0.2 + uTime * uFlutterSpeed;
-    float flutterNoise = snoise(vec3(flutterPhase, 1.0, worldBase.z * 0.15));
-    float flutterDisplace = flutterNoise * uFlutterStrength * vHeight;
+    float flutterDisplace = sin(flutterPhase) * uFlutterStrength * vHeight;
 
     // Combined sway in local X direction
     float totalSway = windDisplace + flutterDisplace;
-
-    // ─── CAR INTERACTION ──────────────────────────────────
-    vec3 toCar = worldBase - uCarPosition;
-    float distToCar = length(toCar.xz);
-    float carInfluence = 1.0 - smoothstep(0.0, uCarBendRadius, distToCar);
-    carInfluence = carInfluence * carInfluence; // quadratic falloff
-    float carBend = carInfluence * uCarBendStrength * vHeight;
-    // Bend away from car
-    vec2 bendDir = normalize(toCar.xz + 0.001);
-    totalSway += bendDir.x * carBend;
 
     // ─── APPLY DISPLACEMENT ───────────────────────────────
     // Rotate blade randomly around Y
@@ -358,10 +295,6 @@ export default function Grass() {
     uBladeWidth: { value: BLADE_WIDTH },
     uLodInner: { value: LOD_INNER_RADIUS },
     uLodOuter: { value: LOD_OUTER_RADIUS },
-    uCarPosition: { value: new THREE.Vector3(0, 0, 0) },
-    uCarBendRadius: { value: CAR_BEND_RADIUS },
-    uCarBendStrength: { value: CAR_BEND_STRENGTH },
-    uCameraRadius: { value: LOD_OUTER_RADIUS },
     uSunDirection: { value: new THREE.Vector3(0.4, 0.5, 0.3).normalize() },
     uSunColor: { value: new THREE.Vector3(0.85, 0.88, 0.95) },
     uAmbientColor: { value: new THREE.Vector3(0.6, 0.65, 0.75) },
@@ -417,13 +350,6 @@ export default function Grass() {
 
     const t = state.clock.elapsedTime
     materialRef.current.uniforms.uTime.value = t
-
-    // Update car position for interaction
-    materialRef.current.uniforms.uCarPosition.value.set(
-      carStore.position.x,
-      0,
-      carStore.position.z
-    )
   })
 
   return (

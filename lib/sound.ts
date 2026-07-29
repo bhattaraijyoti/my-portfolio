@@ -391,102 +391,189 @@ export function playCollision(intensity: number) {
   osc.stop(now + 0.25)
 }
 
-// ─── BACKGROUND MUSIC ────────────────────────────────────────────
+// ─── BACKGROUND MUSIC (upbeat chill wave) ────────
 
 let musicRunning = false
 let musicTimeout: ReturnType<typeof setTimeout> | null = null
 
-const BPM = 120
+const BPM = 110
 const BEAT = 60 / BPM
 
-function playPianoNote(ctx: AudioContext, master: GainNode, freq: number, startTime: number, duration: number, volume = 0.12) {
+function playMelodyNote(ctx: AudioContext, master: GainNode, freq: number, startTime: number, duration: number, vol: number) {
   const osc = ctx.createOscillator()
-  osc.type = 'sine'
+  osc.type = 'triangle'
   osc.frequency.setValueAtTime(freq, startTime)
-  osc.frequency.linearRampToValueAtTime(freq * 0.998, startTime + 0.02)
 
   const osc2 = ctx.createOscillator()
   osc2.type = 'sine'
   osc2.frequency.value = freq * 2
-  const vol2 = volume * 0.15
+
+  const osc3 = ctx.createOscillator()
+  osc3.type = 'sine'
+  osc3.frequency.value = freq * 3
 
   const gain = ctx.createGain()
   gain.gain.setValueAtTime(0, startTime)
-  gain.gain.linearRampToValueAtTime(volume, startTime + 0.005)
-  gain.gain.exponentialRampToValueAtTime(volume * 0.4, startTime + 0.15)
-  gain.gain.setValueAtTime(volume * 0.3, startTime + duration - 0.05)
+  gain.gain.linearRampToValueAtTime(vol, startTime + 0.01)
+  gain.gain.exponentialRampToValueAtTime(vol * 0.6, startTime + 0.1)
+  gain.gain.exponentialRampToValueAtTime(vol * 0.25, startTime + duration * 0.3)
   gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration)
 
   const gain2 = ctx.createGain()
   gain2.gain.setValueAtTime(0, startTime)
-  gain2.gain.linearRampToValueAtTime(vol2, startTime + 0.005)
-  gain2.gain.exponentialRampToValueAtTime(vol2 * 0.3, startTime + 0.1)
-  gain2.gain.setValueAtTime(vol2 * 0.2, startTime + duration - 0.05)
-  gain2.gain.exponentialRampToValueAtTime(0.001, startTime + duration)
+  gain2.gain.linearRampToValueAtTime(vol * 0.4, startTime + 0.01)
+  gain2.gain.exponentialRampToValueAtTime(vol * 0.15, startTime + duration * 0.2)
+  gain2.gain.exponentialRampToValueAtTime(0.001, startTime + duration * 0.6)
+
+  const gain3 = ctx.createGain()
+  gain3.gain.setValueAtTime(0, startTime)
+  gain3.gain.linearRampToValueAtTime(vol * 0.15, startTime + 0.01)
+  gain3.gain.exponentialRampToValueAtTime(0.001, startTime + duration * 0.4)
 
   osc.connect(gain)
   osc2.connect(gain2)
+  osc3.connect(gain3)
   gain.connect(master)
   gain2.connect(master)
+  gain3.connect(master)
   osc.start(startTime)
   osc2.start(startTime)
+  osc3.start(startTime)
   osc.stop(startTime + duration + 0.05)
   osc2.stop(startTime + duration + 0.05)
+  osc3.stop(startTime + duration + 0.05)
 }
 
-function playChord(ctx: AudioContext, master: GainNode, freqs: number[], startTime: number, duration: number) {
-  freqs.forEach((f) => playPianoNote(ctx, master, f, startTime, duration, 0.06))
+function playChord(ctx: AudioContext, master: GainNode, freqs: number[], startTime: number, duration: number, vol: number) {
+  freqs.forEach((f, i) => {
+    const delay = i * 0.015
+
+    const osc = ctx.createOscillator()
+    osc.type = 'triangle'
+    osc.frequency.setValueAtTime(f, startTime + delay)
+
+    const osc2 = ctx.createOscillator()
+    osc2.type = 'sine'
+    osc2.frequency.value = f * 2
+
+    const osc3 = ctx.createOscillator()
+    osc3.type = 'sine'
+    osc3.frequency.value = f * 4
+
+    const gain = ctx.createGain()
+    gain.gain.setValueAtTime(0, startTime + delay)
+    gain.gain.linearRampToValueAtTime(vol * 0.8, startTime + delay + 0.02)
+    gain.gain.exponentialRampToValueAtTime(vol * 0.3, startTime + delay + duration * 0.15)
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + delay + duration)
+
+    const gain2 = ctx.createGain()
+    gain2.gain.setValueAtTime(0, startTime + delay)
+    gain2.gain.linearRampToValueAtTime(vol * 0.3, startTime + delay + 0.02)
+    gain2.gain.exponentialRampToValueAtTime(vol * 0.1, startTime + delay + duration * 0.1)
+    gain2.gain.exponentialRampToValueAtTime(0.001, startTime + delay + duration * 0.5)
+
+    const gain3 = ctx.createGain()
+    gain3.gain.setValueAtTime(0, startTime + delay)
+    gain3.gain.linearRampToValueAtTime(vol * 0.1, startTime + delay + 0.02)
+    gain3.gain.exponentialRampToValueAtTime(0.001, startTime + delay + duration * 0.35)
+
+    osc.connect(gain)
+    osc2.connect(gain2)
+    osc3.connect(gain3)
+    gain.connect(master)
+    gain2.connect(master)
+    gain3.connect(master)
+    osc.start(startTime + delay)
+    osc2.start(startTime + delay)
+    osc3.start(startTime + delay)
+    osc.stop(startTime + delay + duration + 0.05)
+    osc2.stop(startTime + delay + duration + 0.05)
+    osc3.stop(startTime + delay + duration + 0.05)
+  })
 }
 
-const MELODY: [number, number, number][] = [
-  [523.25, 0, 0.25], [587.33, 0.25, 0.25], [659.25, 0.5, 0.25], [523.25, 0.75, 0.25],
-  [659.25, 1.0, 0.5], [587.33, 1.5, 0.25], [523.25, 1.75, 0.25],
-  [659.25, 2.0, 0.5], [698.46, 2.5, 0.25], [659.25, 2.75, 0.25],
-  [587.33, 3.0, 0.25], [523.25, 3.25, 0.25], [587.33, 3.5, 0.25], [659.25, 3.75, 0.25],
-  [783.99, 4.0, 0.5], [659.25, 4.5, 0.25], [587.33, 4.75, 0.25],
-  [523.25, 5.0, 0.25], [587.33, 5.25, 0.25], [659.25, 5.5, 0.25], [587.33, 5.75, 0.25],
-  [523.25, 6.0, 0.75], [440.0, 6.75, 0.25],
-  [493.88, 7.0, 0.25], [523.25, 7.25, 0.25], [587.33, 7.5, 0.25], [659.25, 7.75, 0.25],
+const CHORDS: [number[], number, number][] = [
+  [[174.61, 220.0, 261.63, 349.23], 0, 4],
+  [[220.0, 277.18, 329.63, 440.0], 4, 4],
+  [[196.0, 246.94, 293.66, 392.0], 8, 4],
+  [[246.94, 311.13, 369.99, 493.88], 12, 4],
 ]
 
-const CHORD_ACCOMP: [number[], number][] = [
-  [[261.63, 329.63, 392.0], 0],
-  [[261.63, 329.63, 392.0], 2],
-  [[196.0, 246.94, 293.66], 4],
-  [[196.0, 246.94, 293.66], 6],
-  [[220.0, 261.63, 329.63], 8],
-  [[220.0, 261.63, 329.63], 10],
-  [[174.61, 220.0, 261.63], 12],
-  [[174.61, 220.0, 261.63], 14],
+const MELODY: [number, number, number, number][] = [
+  [349.23, 0, 1.5, 0.07],
+  [440.0, 1.5, 0.5, 0.07],
+  [349.23, 2, 1.5, 0.07],
+  [329.63, 3.5, 0.5, 0.06],
+  [349.23, 4, 1, 0.07],
+  [392.0, 5, 0.5, 0.07],
+  [440.0, 5.5, 0.5, 0.07],
+  [523.25, 6, 1.5, 0.07],
+  [493.88, 7.5, 0.5, 0.06],
+  [440.0, 8, 1, 0.07],
+  [392.0, 9, 0.5, 0.06],
+  [349.23, 9.5, 0.5, 0.06],
+  [329.63, 10, 1.5, 0.07],
+  [293.66, 11.5, 0.5, 0.06],
+  [329.63, 12, 2, 0.08],
+  [440.0, 14, 1, 0.07],
+  [523.25, 15, 1, 0.07],
+  [587.33, 16, 2, 0.08],
+  [523.25, 18, 0.5, 0.06],
+  [493.88, 18.5, 0.5, 0.06],
+  [440.0, 19, 1.5, 0.07],
+  [392.0, 20.5, 0.5, 0.06],
+  [349.23, 21, 1.5, 0.07],
+  [329.63, 22.5, 0.5, 0.06],
+  [349.23, 23, 1, 0.07],
+  [349.23, 24, 0.5, 0.07],
+  [440.0, 24.5, 0.5, 0.07],
+  [523.25, 25, 1.5, 0.08],
+  [493.88, 26.5, 0.5, 0.06],
+  [440.0, 27, 1.5, 0.07],
+  [392.0, 28.5, 0.5, 0.06],
+  [349.23, 29, 1, 0.07],
+  [329.63, 30, 1.5, 0.07],
+  [349.23, 31.5, 0.5, 0.06],
+  [440.0, 32, 1.5, 0.08],
+  [523.25, 33.5, 0.5, 0.07],
+  [587.33, 34, 1.5, 0.08],
+  [523.25, 35.5, 0.5, 0.06],
+  [493.88, 36, 1, 0.07],
+  [440.0, 37, 1.5, 0.07],
+  [392.0, 38.5, 0.5, 0.06],
+  [349.23, 39, 1.5, 0.07],
+  [329.63, 40.5, 0.5, 0.06],
+  [349.23, 41, 1.5, 0.07],
+  [440.0, 42.5, 0.5, 0.06],
+  [523.25, 43, 1, 0.08],
+  [587.33, 44, 1.5, 0.08],
+  [523.25, 45.5, 0.5, 0.06],
+  [493.88, 46, 0.5, 0.06],
+  [440.0, 46.5, 2, 0.07],
 ]
 
-function scheduleBar(ctx: AudioContext, master: GainNode, startTime: number) {
-  MELODY.forEach(([freq, t, dur]) => {
-    playPianoNote(ctx, master, freq, startTime + t, dur, 0.1)
+function scheduleMusicSection(ctx: AudioContext, master: GainNode, startTime: number) {
+  CHORDS.forEach(([freqs, offset, dur]) => {
+    playChord(ctx, master, freqs, startTime + offset, dur, 0.03)
   })
-  CHORD_ACCOMP.forEach(([freqs, t]) => {
-    playChord(ctx, master, freqs, startTime + t, 1.8)
+  MELODY.forEach(([freq, t, dur, vol]) => {
+    playMelodyNote(ctx, master, freq, startTime + t * BEAT, dur * BEAT, vol)
   })
 }
-
-let barCount = 0
 
 function scheduleNextMusic() {
   if (!musicRunning) return
   const { ctx: c, master } = ensureContext()
   const now = c.currentTime
-  const barLen = 8
 
-  scheduleBar(c, master, now + 0.3)
+  scheduleMusicSection(c, master, now + 0.2)
 
-  barCount++
-  musicTimeout = setTimeout(scheduleNextMusic, barLen * 1000)
+  musicTimeout = setTimeout(scheduleNextMusic, 48 * BEAT * 1000)
 }
 
 export function startMusic() {
   if (musicRunning) return
   musicRunning = true
-  barCount = 0
   scheduleNextMusic()
 }
 
