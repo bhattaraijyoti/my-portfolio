@@ -10,7 +10,6 @@ import { useRef, useEffect, useCallback, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { carStore } from './store'
-import { startEngine, updateEngine, stopEngine } from '../../lib/sound'
 
 // ─── PHYSICS CONSTANTS ───────────────────────────────────────────
 
@@ -224,16 +223,6 @@ export default function Car() {
     }
   }, [handleKeyDown, handleKeyUp])
 
-  // ─── SOUND ───────────────────────────────────────────────
-  useEffect(() => {
-    const onInteraction = () => { startEngine(); window.removeEventListener('keydown', onInteraction) }
-    window.addEventListener('keydown', onInteraction)
-    return () => {
-      window.removeEventListener('keydown', onInteraction)
-      stopEngine()
-    }
-  }, [])
-
   // ─── MATERIALS ─────────────────────────────────────────────
   const mats = useMemo(() => ({
     body: new THREE.MeshPhysicalMaterial({
@@ -395,8 +384,6 @@ export default function Car() {
     pos.z = THREE.MathUtils.clamp(pos.z, -WORLD_BOUNDS, WORLD_BOUNDS)
 
     applyVisuals(k, newSpeed, dt, state)
-
-    updateEngine(newSpeed, MAX_SPEED * (k.shift ? BOOST_MULTIPLIER : 1), k.shift)
 
     carStore.position.copy(pos)
     carStore.rotation = heading.current

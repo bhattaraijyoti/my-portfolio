@@ -17,7 +17,7 @@ import { useAdaptiveDPR } from '../../hooks/useAdaptiveDPR'
 import { PhysicsWorld } from './Physics'
 import { WeatherProvider, useWeather, Rain, Snow, WindSystem } from './Weather'
 import RaceTrack from './RaceTrack'
-import { startAmbient, stopAmbient, updateAmbientWind, updateAmbientRain } from '../../lib/sound'
+import { startAmbient, stopAmbient, updateAmbientWind, updateAmbientRain, startMusic, stopMusic } from '../../lib/sound'
 import { trackAchievements } from '../../lib/achievements'
 
 const PROJECTS = [
@@ -76,7 +76,11 @@ export default function Experience({ onProjectProximity, onTeleportReady }: Expe
 
   useEffect(() => {
     startAmbient()
-    return () => stopAmbient()
+    startMusic()
+    return () => {
+      stopAmbient()
+      stopMusic()
+    }
   }, [])
 
   const handleProximity = useCallback((label: string, isNear: boolean) => {
@@ -111,8 +115,8 @@ export default function Experience({ onProjectProximity, onTeleportReady }: Expe
           intensity={2.5}
           color="#d0d8e8"
           castShadow
-          shadow-mapSize-width={256}
-          shadow-mapSize-height={256}
+          shadow-mapSize-width={1024}
+          shadow-mapSize-height={1024}
           shadow-camera-far={50}
           shadow-camera-left={-20}
           shadow-camera-right={20}
@@ -120,7 +124,7 @@ export default function Experience({ onProjectProximity, onTeleportReady }: Expe
           shadow-camera-bottom={-20}
           shadow-bias={-0.0003}
           shadow-normalBias={0.015}
-          shadow-radius={3}
+          shadow-radius={5}
         />
 
         {/* Cool fill */}

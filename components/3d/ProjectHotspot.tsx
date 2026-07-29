@@ -356,7 +356,7 @@ export default function ProjectHotspot({
   const texture = useTexture(image)
   useMemo(() => {
     texture.colorSpace = THREE.SRGBColorSpace
-    texture.minFilter = THREE.LinearFilter
+    texture.minFilter = THREE.LinearMipmapLinearFilter
     texture.magFilter = THREE.LinearFilter
   }, [texture])
 

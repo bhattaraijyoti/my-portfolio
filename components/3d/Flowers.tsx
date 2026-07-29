@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { carStore } from './store'
@@ -107,7 +107,7 @@ export default function Flowers() {
   }, [])
 
   // Set initial transforms
-  useMemo(() => {
+  useEffect(() => {
     if (!stemRef.current || !centerRef.current || !petalRef.current) return
 
     flowers.forEach((f, i) => {

@@ -136,11 +136,11 @@ export default function Scene() {
           alpha: false,
           powerPreference: 'high-performance',
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.0,
+          toneMappingExposure: 1.2,
           stencil: false,
           depth: true,
         }}
-        dpr={[1, 2]}
+        dpr={[1, 2.5]}
         style={{ background: '#000' }}
       >
         <color attach="background" args={['#000']} />
@@ -151,7 +151,7 @@ export default function Scene() {
             onTeleportReady={(fn) => { teleportRef.current = fn }}
           />
 
-          <Environment preset="sunset" environmentIntensity={0.4} />
+          <Environment preset="sunset" environmentIntensity={0.6} />
         </Suspense>
 
         <EffectComposer multisampling={2}>

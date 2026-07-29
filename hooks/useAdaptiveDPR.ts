@@ -6,7 +6,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 const TARGET_FPS = 60
 const CHECK_INTERVAL = 2.0
 const MIN_DPR = 0.75
-const MAX_DPR = 2.0
+const MAX_DPR = 2.5
 
 export function useAdaptiveDPR() {
   const { gl } = useThree()

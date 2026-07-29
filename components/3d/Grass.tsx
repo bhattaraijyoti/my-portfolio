@@ -103,6 +103,12 @@ const grassVertexShader = `
     float localHeight = position.y * uBladeHeight * heightFactor;
     float localWidth = position.x * uBladeWidth * instanceScale.x;
 
+    // ─── LOD FADE — shrink distant blades to reduce GPU fill ─
+    float distToCamera = distance(cameraPosition.xz, instanceOffset.xz);
+    float lodFade = 1.0 - smoothstep(uLodInner, uLodOuter, distToCamera);
+    localWidth *= lodFade;
+    localHeight *= lodFade;
+
     // Per-blade UV height (0 = base, 1 = tip)
     vHeight = position.y;
 
@@ -145,10 +151,6 @@ const grassVertexShader = `
     displaced.z = -localWidth * sinR + totalSway * sinR;
 
     displaced += instanceOffset;
-
-    // ─── LOD FADE ─────────────────────────────────────────
-    float distToCamera = length(displaced.xz);
-    float lodFade = 1.0 - smoothstep(uLodInner, uLodOuter, distToCamera);
 
     vColor = instanceColor;
     vAoFactor = vHeight; // used for fake AO in fragment
